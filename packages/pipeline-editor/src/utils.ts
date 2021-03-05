@@ -30,10 +30,11 @@ export default class Utils {
   }
 
   /**
-   * Utility to create a one node pipeline to submit a single Notebook as a pipeline
+   * Utility to create a one node pipeline to submit a single file as a pipeline
    */
-  static generateNotebookPipeline(
+  static generateSingleFilePipeline(
     filename: string,
+    runtime_platform: string,
     runtime_config: string,
     runtimeImage: string,
     dependencies: string[],
@@ -59,9 +60,11 @@ export default class Utils {
     template.pipelines[0].nodes[0].app_data.dependencies = dependencies;
 
     template.pipelines[0].app_data.name = artifactName;
-    template.pipelines[0].app_data.runtime = 'kfp';
+    template.pipelines[0].app_data.runtime = runtime_platform;
     template.pipelines[0].app_data['runtime-config'] = runtime_config;
     template.pipelines[0].app_data.version = PIPELINE_CURRENT_VERSION;
+    template.pipelines[0].app_data.source =
+      'Generated for ' + PathExt.basename(filename);
 
     return template;
   }

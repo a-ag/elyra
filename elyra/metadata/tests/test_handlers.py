@@ -130,9 +130,11 @@ async def test_create_instance(jp_base_url, jp_fetch):
                                                       METADATA_TEST_NAMESPACE, 'valid')
     metadata = json.loads(r.body.decode())
     # Add expected "extra" fields to 'valid' so whole-object comparison is satisfied.
-    # These are added during the pre_save() hook on the MockMetadataTest class instance.
+    # These are added during the pre_save() hook on the MockMetadataTest class instance
+    # or when default values for missing properties are applied.
     valid['for_update'] = False
     valid['special_property'] = valid['metadata']['required_test']
+    valid['metadata']['number_default_test'] = 42
     assert metadata == valid
 
 
@@ -380,7 +382,7 @@ async def test_missing_runtimes_schema(jp_fetch):
 
 async def test_get_runtimes_schemas(jp_fetch):
     # Ensure all schema for runtimes can be found
-    await _get_namespace_schemas(jp_fetch, 'runtimes', ['kfp'])
+    await _get_namespace_schemas(jp_fetch, 'runtimes', ['kfp', 'airflow'])
 
 
 async def test_get_code_snippets_schemas(jp_fetch):

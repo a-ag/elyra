@@ -23,8 +23,8 @@ class Operation(object):
     """
 
     def __init__(self, id, type, classifier, filename, runtime_image, memory=None, cpu=None, gpu=None,
-                 dependencies=None, include_subdirectories: bool = False, env_vars=None, inputs=None, outputs=None,
-                 parent_operations=None):
+                 dependencies=None, include_subdirectories: bool = False, env_vars=None, inputs=None,
+                 outputs=None, parent_operations=None):
         """
         :param id: Generated UUID, 128 bit number used as a unique identifier
                    e.g. 123e4567-e89b-12d3-a456-426614174000
@@ -123,10 +123,11 @@ class Operation(object):
         return self._gpu
 
     def env_vars_as_dict(self, logger: Optional[object] = None) -> Dict:
-        """Operation stores environment variables in a list of name=value pairs, while
-           subprocess.run() requires a dictionary - so we must convert.  If no envs are
-           configured on the Operation, the existing env is returned, otherwise envs
-           configured on the Operation are overlayed on the existing env.
+        """
+        Operation stores environment variables in a list of name=value pairs, while
+        subprocess.run() requires a dictionary - so we must convert.  If no envs are
+        configured on the Operation, the existing env is returned, otherwise envs
+        configured on the Operation are overlayed on the existing env.
         """
         envs = {}
         for nv in self.env_vars:
@@ -209,7 +210,7 @@ class Pipeline(object):
     Represents a single pipeline constructed in the pipeline editor
     """
 
-    def __init__(self, id, name, runtime, runtime_config):
+    def __init__(self, id, name, runtime, runtime_config, source=None):
         """
         :param id: Generated UUID, 128 bit number used as a unique identifier
                    e.g. 123e4567-e89b-12d3-a456-426614174000
@@ -218,6 +219,7 @@ class Pipeline(object):
         :param runtime: Type of runtime we want to use to execute our pipeline
                         e.g. kfp OR airflow
         :param runtime_config: Runtime configuration that should be used to submit the pipeline to execution
+        :param source: The pipeline source, e.g. a pipeline file or a notebook.
         """
 
         if not name:
@@ -229,6 +231,7 @@ class Pipeline(object):
 
         self._id = id
         self._name = name
+        self._source = source
         self._runtime = runtime
         self._runtime_config = runtime_config
         self._operations = {}
@@ -240,6 +243,10 @@ class Pipeline(object):
     @property
     def name(self):
         return self._name
+
+    @property
+    def source(self):
+        return self._source
 
     @property
     def runtime(self):
@@ -263,6 +270,7 @@ class Pipeline(object):
         if isinstance(self, other.__class__):
             return self.id == other.id and \
                 self.name == other.name and \
+                self.source == other.source and \
                 self.runtime == other.runtime and \
                 self.runtime_config == other.runtime_config and \
                 self.operations == other.operations

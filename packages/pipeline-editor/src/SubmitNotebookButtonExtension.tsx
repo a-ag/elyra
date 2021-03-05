@@ -23,8 +23,8 @@ import { INotebookModel, NotebookPanel } from '@jupyterlab/notebook';
 import { IDisposable } from '@lumino/disposable';
 import * as React from 'react';
 
+import { FileSubmissionDialog } from './FileSubmissionDialog';
 import { formDialogWidget } from './formDialogWidget';
-import { NotebookSubmissionDialog } from './NotebookSubmissionDialog';
 import { PipelineService } from './PipelineService';
 import Utils from './utils';
 
@@ -46,14 +46,18 @@ export class SubmitNotebookButtonExtension
     const images = await PipelineService.getRuntimeImages().catch(error =>
       RequestErrors.serverError(error)
     );
+    const schema = await PipelineService.getRuntimesSchema().catch(error =>
+      RequestErrors.serverError(error)
+    );
 
     const dialogOptions = {
       title: 'Submit notebook',
       body: formDialogWidget(
-        <NotebookSubmissionDialog
+        <FileSubmissionDialog
           env={env}
           runtimes={runtimes}
           images={images}
+          schema={schema}
         />
       ),
       buttons: [Dialog.cancelButton(), Dialog.okButton()]
@@ -67,6 +71,7 @@ export class SubmitNotebookButtonExtension
     }
 
     const {
+      runtime_platform,
       runtime_config,
       framework,
       dependency_include,
@@ -75,8 +80,9 @@ export class SubmitNotebookButtonExtension
     } = dialogResult.value;
 
     // prepare notebook submission details
-    const pipeline = Utils.generateNotebookPipeline(
+    const pipeline = Utils.generateSingleFilePipeline(
       this.panel.context.path,
+      runtime_platform,
       runtime_config,
       framework,
       dependency_include ? dependencies : undefined,

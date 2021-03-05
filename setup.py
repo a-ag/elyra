@@ -15,6 +15,7 @@
 #
 import os
 import sys
+
 from glob import glob
 from setuptools import setup, find_packages
 
@@ -34,6 +35,16 @@ auto_extension_path = "./etc/config/jupyter_server_config.d/*.json"
 settings_path = './etc/config/settings/*.json'
 metadata_path = './etc/config/metadata/runtime-images/*.json'
 
+# kfp_packages = [
+#     'kfp-notebook~=0.20.0',
+#     'kfp==1.3.0',
+#     'kfp-tekton==0.6.0',
+#     ]
+#
+# airflow_packages = [
+#     'pygithub',
+#     'black'
+# ]
 
 setup_args = dict(
     name="elyra",
@@ -59,9 +70,6 @@ setup_args = dict(
         'jupyterlab-git==0.30.0b1',
         'jupyterlab-lsp>=3.0.0',
         'jupyter-resource-usage>=0.5.1',
-        'kfp-notebook~=0.18.0',
-        'kfp==1.3.0',
-        'kfp-tekton==0.6.0',
         'minio>=5.0.7,<7.0.0',
         'nbclient>=0.5.1',
         'nbconvert>=5.6.1,<6.0',
@@ -71,9 +79,17 @@ setup_args = dict(
         'python-language-server[all]>=0.36.2',
         'requests>=2.9.1,<3.0',
         'rfc3986-validator>=0.1.1',
+        'tornado >=6.1.0',
         'traitlets>=4.3.2',
         'urllib3>=1.24.2',
         'websocket-client',
+        # KFP runtime dependencies
+        'kfp-notebook~=0.20.0',
+        'kfp==1.3.0',
+        'kfp-tekton==0.6.0',
+        # Airflow runtime dependencies
+        'pygithub',
+        'black'
     ],
     extras_require={
         'test': ['pytest', 'pytest-tornasync'],
@@ -97,6 +113,7 @@ setup_args = dict(
         ],
         'elyra.pipeline.processors': [
             'local = elyra.pipeline.processor_local:LocalPipelineProcessor',
+            'airflow = elyra.pipeline.processor_airflow:AirflowPipelineProcessor',
             'kfp = elyra.pipeline.processor_kfp:KfpPipelineProcessor'
         ],
         'papermill.engine': [
@@ -105,10 +122,22 @@ setup_args = dict(
     },
 )
 
+
 if "--dev" not in sys.argv:
     setup_args["data_files"].append(('share/jupyter/lab/extensions', glob(npm_packages_path)))
 else:
     sys.argv.remove("--dev")
+
+# TODO: @akchin document this
+# if "--airflow" not in sys.argv:
+#     setup_args["install_requires"].append(kfp_packages)
+#     setup_args["entry_points"]['elyra.pipeline.processors'].append(
+#         'kfp = elyra.pipeline.processor_kfp:KfpPipelineProcessor')
+# else:
+#     setup_args["install_requires"].append(airflow_packages)
+#     setup_args["entry_points"]['elyra.pipeline.processors'].append(
+#         'airflow = elyra.pipeline.processor_airflow:AirflowPipelineProcessor')
+#     sys.argv.remove("--airflow")
 
 if __name__ == '__main__':
     setup(**setup_args)
